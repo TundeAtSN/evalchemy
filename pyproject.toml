@@ -38,6 +38,7 @@ dependencies = [
     "jsonpickle>=4.0.1",
     "langdetect>=1.0.9",
     "lm-eval[vllm] ; sys_platform == 'linux'",
+    "lm-eval ; sys_platform == 'darwin'",
     "loguru>=0.7.3",
     "mistralai>=1.5.0",
     "msgpack>=1.1.0",
@@ -75,6 +76,7 @@ dependencies = [
     "wandb>=0.19.6",
     "websocket>=0.2.1",
     "wget>=3.2",
+    "alpaca-eval",
 ]
 
 [tool.uv]
@@ -84,6 +86,7 @@ package = true
 pyext = { git = "https://github.com/penfever/PyExt" }
 lm-eval = { git = "https://github.com/EtashGuha/lm-evaluation-harness", rev = "etashg/tokenize_fix" }
 fschat = { path = "eval/chat_benchmarks/MTBench" }
+alpaca-eval = { path = "eval/chat_benchmarks/alpaca_eval" }
 
 [tool.setuptools.packages.find]
 include = ["eval", "database"]
