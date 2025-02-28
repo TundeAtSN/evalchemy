@@ -81,6 +81,7 @@ class MBPPBenchmark(BaseBenchmark):
                 examples_str.append(example_prompt)
 
             eval_range = range(self.start_idx, min(self.end_idx, len(examples)))
+
             if self.debug:
                 eval_range = list(eval_range)[:2]
                 self.logger.info(f"Debug mode: using 2 examples")

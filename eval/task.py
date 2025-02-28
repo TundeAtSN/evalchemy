@@ -109,12 +109,13 @@ class TaskManager:
         self.benchmark_instances: Dict[str, BaseBenchmark] = {}
         self.benchmark_kwargs = benchmark_kwargs
 
+        self.benchmarks_dir = benchmarks_dir
         # Load benchmarks from directory
-        self._load_benchmarks(benchmarks_dir)
+        self.load_benchmarks()
 
-    def _load_benchmarks(self, benchmarks_dir: str):
+    def load_benchmarks(self, tasks: list[str] = None):
         """Dynamically load benchmarks from the specified directory."""
-        current_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), benchmarks_dir)
+        current_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), self.benchmarks_dir)
 
         for item in os.listdir(current_dir):
             item_path = os.path.join(current_dir, item)
@@ -125,11 +126,13 @@ class TaskManager:
             if not os.path.exists(eval_path):
                 self.logger.warning(f"eval_instruct.py not found in {item}")
                 continue
-
+            
+            # if tasks and item not in tasks:
+            #     continue
             # try:
             # Import the module
             sys.path.insert(0, item_path)
-            spec = importlib.util.spec_from_file_location(f"eval.{benchmarks_dir}.{item}.eval_instruct", eval_path)
+            spec = importlib.util.spec_from_file_location(f"eval.{self.benchmarks_dir}.{item}.eval_instruct", eval_path)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             sys.path.pop(0)
@@ -167,8 +170,8 @@ class TaskManager:
 
             # Only pass kwargs that the benchmark's __init__ accepts
             for param_name, param in init_params.items():
-                if param_name in self.benchmark_kwargs:
-                    valid_kwargs[param_name] = self.benchmark_kwargs[param_name]
+                if param_name in self.benchmark_kwargs.get(name, {}):
+                    valid_kwargs[param_name] = self.benchmark_kwargs[name][param_name]
                     self.logger.debug(f"Passing {param_name} to {name} benchmark")
 
             instance = benchmark_class(**valid_kwargs)

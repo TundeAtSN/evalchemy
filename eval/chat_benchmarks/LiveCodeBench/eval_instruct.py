@@ -45,6 +45,7 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
         debug: bool = False,
         seed: List[int] = [0, 1234, 1234, 1234],
         logger: Optional[logging.Logger] = None,
+        max_new_tokens: int = 32768
     ):
         """
         Initialize LiveCodeBench benchmark.
@@ -56,7 +57,7 @@ class LiveCodeBenchBenchmark(BaseBenchmark):
         """
         super().__init__(logger)
         self.debug = debug
-        self.max_new_tokens = 32768  # set higher to avoid truncation for reasoning models
+        self.max_new_tokens = max_new_tokens  # set higher to avoid truncation for reasoning models
         self.seed = seed
 
     def generate_responses(self, model: LM) -> Dict[str, Any]:

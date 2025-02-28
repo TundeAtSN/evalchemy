@@ -24,6 +24,9 @@ class MBPPPlusBenchmark(BaseBenchmark):
         data_dir: str = "eval/chat_benchmarks/MBPPPlus/data",
         max_tokens: int = 1024,
         num_workers: int = 8,
+        num_examples: int = 3,
+        start_idx: int = 0,
+        end_idx: int = 500,
         timeout: float = 3.0,
         debug: bool = False,
         logger: Optional[logging.Logger] = None,
@@ -45,9 +48,9 @@ class MBPPPlusBenchmark(BaseBenchmark):
         self.num_workers = num_workers
         self.timeout = timeout
         self.debug = debug
-        self.num_examples = 3
-        self.start_idx = 0
-        self.end_idx = 500
+        self.num_examples = num_examples
+        self.start_idx = start_idx
+        self.end_idx = end_idx
 
     def format_test_example(self, question: str, tests: List[str], code: Optional[str] = None) -> str:
         """Format a single test example."""

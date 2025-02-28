@@ -5,7 +5,7 @@ import os
 import sys
 import time
 import yaml
-from typing import Optional, List, Dict, Union
+from typing import Any, Optional, List, Dict, Union
 
 import concurrent.futures
 import torch.distributed as dist
@@ -100,6 +100,7 @@ def evaluate(
     batch_sizes_list: List[int],
     verbosity: str = "INFO",
     args=None,
+    task_kwargs: dict[str, dict[str, Any]] | None = None,
     **eval_kwargs,
 ) -> Dict[str, Dict]:
     """
@@ -252,10 +253,13 @@ def cli_evaluate(args: Optional[argparse.Namespace] = None) -> None:
         # This overwrites `--tasks` and `--batch_size`
         with open(args.config, "r") as file:
             tasks_yaml = yaml.safe_load(file)
+
         args.tasks = ",".join([t["task_name"] for t in tasks_yaml["tasks"]])
         batch_sizes_list = [int(t["batch_size"]) if t["batch_size"] != "auto" else "auto" for t in tasks_yaml["tasks"]]
+        task_kwargs = {t["task_name"]: t.get("kwargs", {}) for t in tasks_yaml["tasks"]}
         args.annotator_model = tasks_yaml.get("annotator_model", args.annotator_model)
     else:
+        task_kwargs = {}
         batch_sizes_list = [
             int(args.batch_size) if args.batch_size != "auto" else args.batch_size
             for _ in range(len(args.tasks.split(",")))
@@ -294,15 +298,16 @@ def cli_evaluate(args: Optional[argparse.Namespace] = None) -> None:
     if args.annotator_model in LIST_OPENAI_MODELS:
         if not os.getenv("OPENAI_API_KEY"):
             raise ValueError("Please set OPENAI_API_KEY")
-
-    task_manager = InstructTaskManager(annotator_model=args.annotator_model, debug=args.debug, seed=args.seed)
+    
+    # TODO: @theyorubayesian - Why load all tasks?
+    task_manager = InstructTaskManager(annotator_model=args.annotator_model, debug=args.debug, seed=args.seed, **task_kwargs)
     pretrain_task_manager = PretrainTaskManager(args.verbosity, include_path=args.include_path)
 
     utils.eval_logger.info(f"Selected Tasks: {[task for task in task_list]}")
 
     # Initialize model
     try:
-        lm = initialize_model(args.model, args.model_args, batch_size=args.batch_size)
+        lm = initialize_model(args.model, args.model_args, batch_size=args.batch_size, device=args.device)
     except Exception as e:
         utils.eval_logger.error(f"Failed to initialize model: {str(e)}")
         sys.exit(1)
@@ -336,6 +341,7 @@ def cli_evaluate(args: Optional[argparse.Namespace] = None) -> None:
         batch_sizes_list=batch_sizes_list,
         verbosity=args.verbosity,
         args=args,
+        task_kwargs=task_kwargs
     )
 
     # Add metadata to results

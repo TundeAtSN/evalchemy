@@ -38,12 +38,23 @@ class ZeroEvalBenchmark(BaseBenchmark):
         self,
         tasks: List[str] = ["zebra-grid", "numersense-v2", "crux", "math-l5"],
         config: Optional[ZeroEvalConfig] = None,
+        start_idx: int = 0,
+        end_idx: int = -1,
+        temperature: float = 0.0,
+        max_tokens: int = 4096,
+        do_sample: bool = False,
         debug: bool = False,
         logger: Optional[logging.Logger] = None,
     ):
         super().__init__(logger)
         self.tasks = tasks
-        self.config = config or ZeroEvalConfig()
+        self.config = config or ZeroEvalConfig(
+            start_index=start_idx,
+            end_index=end_idx,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            do_sample=do_sample
+        )
         self.debug = debug
 
     def load_dataset(self, data_name: str) -> Tuple[List[str], List[str], List[Dict[str, Any]], Dict[str, Any]]:
@@ -157,7 +168,7 @@ class ZeroEvalBenchmark(BaseBenchmark):
                 repetition_penalty=0.0,
                 temperature=0.0,
                 top_p=0.0,
-                max_tokens=4096,
+                max_tokens=self.config.max_tokens,
             )
             save_outputs(save_args, id_strs, outputs, chat_history, metadata, model_inputs, output_path)
 
