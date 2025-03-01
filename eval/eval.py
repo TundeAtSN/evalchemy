@@ -148,7 +148,7 @@ def evaluate(
     if pretrain_tasks:
         eval_logger.info(f"Pretrain tasks to evaluate: {pretrain_tasks}")
 
-    results = {"results": {}}
+    results = {"results": {}, "samples": {}}
 
     # Run benchmark evaluations - sequential generation, parallel evaluation
     if benchmark_tasks:
@@ -177,6 +177,8 @@ def evaluate(
 
             # Store results using valid tasks for correct mapping
             for task, result in zip(valid_tasks, evaluate_results):
+                samples = result.pop("samples", [])
+                results["samples"][task] = samples
                 results["results"][task] = result
 
     # Run pretrain evaluations if any exist

@@ -154,7 +154,7 @@ Please continue to complete the function. You are not allowed to modify the give
         temp_dir_obj = results["temp_dir_obj"]
         temp_dir = temp_dir_obj.name
 
-        evaluation_results = {}
+        evaluation_results = {"samples": []}
 
         for lang in self.languages:
             try:
@@ -173,6 +173,8 @@ Please continue to complete the function. You are not allowed to modify the give
                     problem_file=problem_file,
                     language=lang,
                 )
+
+                evaluation_results["samples"] += result.pop("samples")
 
                 for metric, value in result.items():
                     evaluation_results[f"{lang}_{metric}"] = value

@@ -226,7 +226,6 @@ def evaluate_functional_correctness(
     sample_jsonl = stream_jsonl_all(input_file)
 
     with ThreadPoolExecutor(max_workers=n_workers) as executor:
-
         futures = []
         completion_id = Counter()
         n_samples = 0
@@ -290,8 +289,10 @@ def evaluate_functional_correctness(
         passed = [r[1]["passed"] for r in result]
         total.append(len(passed))
         correct.append(sum(passed))
+
     total = np.array(total)
     correct = np.array(correct)
+
     evaluate_pass_at_k = True
     if evaluate_pass_at_k:
         ks = k
@@ -300,4 +301,13 @@ def evaluate_functional_correctness(
     else:
         print("Total:", np.sum(total))
         print("Correct:", np.sum(correct))
-    return pass_at_k
+
+    all_results = {
+        "samples": [
+            {**sample, "prompt": problems[sample["task_id"]]["prompt"]}
+            for _, sample in itertools.chain.from_iterable(results.values())
+        ],
+        "pass_at_k": pass_at_k
+    }
+
+    return all_results
